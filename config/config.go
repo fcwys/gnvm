@@ -2,13 +2,14 @@ package config
 
 import (
 	// lib
+	"io"
+
 	. "github.com/Kenshin/cprint"
 	"github.com/tsuru/config"
 
 	// go
 	"bufio"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"regexp"
@@ -24,7 +25,7 @@ import (
 var configPath, globalversion, latsetversion string
 
 const (
-	VERSION = "0.2.0"
+	VERSION = "0.2.2"
 	CONFIG  = ".gnvmrc"
 	NEWLINE = "\n"
 
@@ -74,7 +75,7 @@ func init() {
 }
 
 /*
- Create .gnvmrc file
+Create .gnvmrc file
 */
 func createConfig() {
 
@@ -112,7 +113,7 @@ func createConfig() {
 }
 
 /*
- Read .gnvmrc file
+Read .gnvmrc file
 */
 func readConfig() {
 	if err := config.ReadConfigFile(configPath); err != nil {
@@ -122,23 +123,27 @@ func readConfig() {
 }
 
 /*
- Write config property value from .gnvmrc file
+Write config property value from .gnvmrc file
 
- Param:
- 	- key:   config property, include: registry noderoot latestversion globalversion
- 	- value: config property value
-
+Param:
+  - key:   config property, include: registry noderoot latestversion globalversion
+  - value: config property value
 */
 func SetConfig(key string, value interface{}) string {
 	if key == "registry" {
-		if !strings.HasPrefix(value.(string), "http://") {
-			P(WARING, "%v need %v", value.(string), "http://", "\n")
-			value = "http://" + value.(string)
+		if !strings.HasPrefix(value.(string), "https://") && !strings.HasPrefix(value.(string), "http://") {
+			P(WARING, "%v need %v", value.(string), "https:// or http://", "\n")
+			if strings.HasPrefix(value.(string), "https://") {
+				value = "https://" + value.(string)
+			} else {
+				value = "http://" + value.(string)
+			}
+
 		}
 		if !strings.HasSuffix(value.(string), "/") {
 			value = value.(string) + "/"
 		}
-		reg, _ := regexp.Compile(`^https?:\/\/(w{3}\.)?([-a-zA-Z0-9.])+(\.[a-zA-Z]+)(:\d{1,4})?(\/)+`)
+		reg, _ := regexp.Compile(`^(https|http)?:\/\/(w{3}\.)?([-a-zA-Z0-9.])+(\.[a-zA-Z]+)(:\d{1,4})?(\/)+`)
 		if !reg.MatchString(value.(string)) {
 			P(ERROR, "%v value %v must valid url.\n", "registry", value.(string))
 			return ""
@@ -162,14 +167,13 @@ func SetConfig(key string, value interface{}) string {
 }
 
 /*
- Read config property value from .gnvmrc file
+Read config property value from .gnvmrc file
 
- Param:
- 	- key:   config property, include: registry noderoot latestversion globalversion
+Param:
+  - key:   config property, include: registry noderoot latestversion globalversion
 
- Return:
- 	- value: config property value
-
+Return:
+  - value: config property value
 */
 func GetConfig(key string) string {
 	value, err := config.GetString(key)
@@ -180,7 +184,7 @@ func GetConfig(key string) string {
 }
 
 /*
- Init config property value from .gnvmrc file
+Init config property value from .gnvmrc file
 */
 func ReSetConfig() {
 	if newValue := SetConfig(REGISTRY, util.ORIGIN_DEFAULT); newValue != "" {
@@ -208,7 +212,7 @@ func ReSetConfig() {
 }
 
 /*
- Print all config property value from .gnvmrc file
+Print all config property value from .gnvmrc file
 */
 func List() {
 	P(NOTICE, "config file path %v \n", configPath)
@@ -231,14 +235,13 @@ func List() {
 }
 
 /*
- Get io.js url
+Get io.js url
 
- Param:
- 	- url:   config property, include: registry noderoot latestversion globalversion
+Param:
+  - url:   config property, include: registry noderoot latestversion globalversion
 
- Return:
- 	- value: config property value
-
+Return:
+  - value: config property value
 */
 func GetIOURL(url string) string {
 	if url == util.ORIGIN_TAOBAO {
@@ -250,9 +253,9 @@ func GetIOURL(url string) string {
 }
 
 /*
- Verify config registry url structural correctness, include:
- 	- url:  <url>
- 	- json: <url>/index.json
+Verify config registry url structural correctness, include:
+  - url:  <url>
+  - json: <url>/index.json
 */
 func Verify() {
 	code := make(chan int)

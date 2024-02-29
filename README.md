@@ -5,7 +5,11 @@
 [![Gitter][gitter-badge]][gitter-link]
 [![Slack][slack-badge]][slack-link]
 [![Jianliao][jianliao-badge]][jianliao-link]  
+
 #### `GNVM` 是一个简单的 `Windows` 下 Node.js 多版本管理器，类似的 `nvm` `nvmw` `nodist` 。  
+
+说明：因原作者项目年久失修，故继续修复官方下载地址并完善淘宝和华为国内镜像站下载。
+
 ```
 c:\> gnvm install latest 1.0.0-x86 1.0.0-x64 5.0.0
 Start download Node.js versions [5.10.1, 1.0.0, 1.0.0-x86, 5.0.0].
@@ -34,32 +38,16 @@ Update success, current Node.js latest version is 5.10.0.
 * 下载即用，无需配置。
 * 彩色日志输出。
 * 支持多线程下载。
-* 内置 [TAOBAO](http://npm.taobao.org/mirrors/node)，方便切换，也支持自定义。
+* 内置 [TAOBAO](https://cdn.npmmirror.com/binaries/node/) 和 [HUAWEI](https://mirrors.huaweicloud.com/nodejs/)，方便切换，也支持自定义。
 * 支持 `NPM` 下载/安装/配置。
 
 主页
 ---
 [![Website][www-badge]][www-link]
 
-文档
----
-[English](https://github.com/kenshin/gnvm/blob/master/README.en.md) | [繁體中文](https://github.com/kenshin/gnvm/blob/master/README.tw.md)
-
 下载
 ---
-* [32-bit](https://app.box.com/gnvm/1/2014967291) | [64-bit](https://app.box.com/gnvm/1/2014967689) 常用地址，Box，速度稍慢
-* [32-bit](http://pan.baidu.com/s/1gdmVgen#dir/path=%2F%E6%88%91%E7%9A%84%E5%85%B1%E4%BA%AB%2Fgnvm%2F32-bit) | [64-bit](http://pan.baidu.com/s/1gdmVgen#dir/path=%2F%E6%88%91%E7%9A%84%E5%85%B1%E4%BA%AB%2Fgnvm%2F64-bit) 备用地址，百度网盘，速度快
-* [32-bit](https://github.com/Kenshin/gnvm-bin/blob/master/32-bit/gnvm.exe?raw=true) | [64-bit](https://github.com/Kenshin/gnvm-bin/blob/master/64-bit/gnvm.exe?raw=true) 备用地址，Github
-
-* 已经安装了go的用户，使用  
-  `go get github.com/Kenshin/gnvm`
-
-* 已经安装了git的用户，使用  
-  `git clone git@github.com:Kenshin/gnvm-bin.git`
-
-* 已经安装了curl的用户，使用  
-  `curl -L https://github.com/Kenshin/gnvm-bin/blob/master/32-bit/gnvm.exe?raw=true -o gnvm.exe`  
-  `curl -L https://github.com/Kenshin/gnvm-bin/blob/master/64-bit/gnvm.exe?raw=true -o gnvm.exe`
+* 前往[Release](https://github.com/fcwys/gnvm/releases)下载最新版本
 
 安装
 ---

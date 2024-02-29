@@ -3,12 +3,13 @@ package nodehandle
 import (
 
 	// lib
+	"io"
+
 	"github.com/Kenshin/curl"
 	"github.com/bitly/go-simplejson"
 
 	// go
 	"fmt"
-	"io/ioutil"
 	"regexp"
 	"strconv"
 	"strings"
@@ -41,23 +42,29 @@ type (
 )
 
 /*
- Create nodist( map[string]NodeDetail )
+Create nodist( map[string]NodeDetail )
 
- Param:
-    - url:    index.json url, e.g. http://npm.taobao.org/mirrors/node/index.json
-    - filter: regexp when regexp == nil, filter all NodeDetail
+Param:
+  - url:    index.json url, e.g. https://cdn.npmmirror.com/binaries/node/
+  - filter: regexp when regexp == nil, filter all NodeDetail
 
- Return:
-    - nodist: nodedetail collection
-    - error:  error
-    - code:   error flag
+Return:
 
-      Code:
-        - -1: get url error
-        - -2: read res.body error
-        - -3: create json error
-        - -4: parse json error
+  - nodist: nodedetail collection
 
+  - error:  error
+
+  - code:   error flag
+
+    Code:
+
+  - -1: get url error
+
+  - -2: read res.body error
+
+  - -3: create json error
+
+  - -4: parse json error
 */
 func New(url string, filter *regexp.Regexp) (*Nodist, error, int) {
 	code, res, err := curl.Get(url)
@@ -66,7 +73,7 @@ func New(url string, filter *regexp.Regexp) (*Nodist, error, int) {
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err, -2
 	}
@@ -105,16 +112,15 @@ func New(url string, filter *regexp.Regexp) (*Nodist, error, int) {
 }
 
 /*
- Find NodeDetail by node version
+Find NodeDetail by node version
 
- Param:
-    - url: index.json url, e.g. http://npm.taobao.org/mirrors/node/index.json
-    - ver: node version. e.g. 5.9.0
+Param:
+  - url: index.json url, e.g. https://cdn.npmmirror.com/binaries/node/
+  - ver: node version. e.g. 5.9.0
 
- Return:
-    - *NodeDetail: nodedetail struct
-    - error
-
+Return:
+  - *NodeDetail: nodedetail struct
+  - error
 */
 func FindNodeDetailByVer(url, ver string) (*NodeDetail, error) {
 	filter, err := util.FormatWildcard(ver, url)
@@ -133,11 +139,10 @@ func FindNodeDetailByVer(url, ver string) (*NodeDetail, error) {
 }
 
 /*
- Print NodeDetail collection
+Print NodeDetail collection
 
- Param:
-    - limit: print lines, when limit == 0, print all nodedetail
-
+Param:
+  - limit: print lines, when limit == 0, print all nodedetail
 */
 func (this *Nodist) Detail(limit int) {
 	table := `+--------------------------------------------------+
@@ -167,14 +172,13 @@ func (this *Nodist) Detail(limit int) {
 }
 
 /*
- Format exe
+Format exe
 
- Param:
- 	- version: Node.js version
+Param:
+  - version: Node.js version
 
- Return:
- 	- exec:    formatting string, e.g. '[x]'
-
+Return:
+  - exec:    formatting string, e.g. '[x]'
 */
 func formatExe(version string) (exec string) {
 	switch util.GetNodeVerLev(util.FormatNodeVer(version)) {
@@ -189,17 +193,16 @@ func formatExe(version string) (exec string) {
 }
 
 /*
-  Format label, e.g.
-     aa:
-    bbb:
+	Format label, e.g.
+	   aa:
+	  bbb:
 
- Param:
- 	- value: format str
- 	- max  : max empty
+Param:
+  - value: format str
+  - max  : max empty
 
- Return:
- 	- Format label
-
+Return:
+  - Format label
 */
 func leftpad(value string, max int) string {
 	if len(value) > max {

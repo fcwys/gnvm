@@ -31,7 +31,7 @@ func testSearch() {
 }
 
 func testNodist() {
-	if nl, err, code := nodehandle.New("http://npm.taobao.org/mirrors/iojs/index.json", nil); err != nil {
+	if nl, err, code := nodehandle.New("https://cdn.npmmirror.com/binaries/iojs/index.json", nil); err != nil {
 		fmt.Println(err)
 		fmt.Println(code)
 	} else {
@@ -50,7 +50,7 @@ func testNPManage() {
 }
 
 func testGetNPMVer() {
-	url := "http://npm.taobao.org/mirrors/node/index.json"
+	url := "https://cdn.npmmirror.com/binaries/node/index.json"
 	ver := "5.9.0"
 	if nd, err := nodehandle.FindNodeDetailByVer(url, ver); err == nil {
 		fmt.Println(nd)

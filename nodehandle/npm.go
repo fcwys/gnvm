@@ -3,16 +3,18 @@ package nodehandle
 import (
 
 	// lib
+	"compress/gzip"
+
 	. "github.com/Kenshin/cprint"
 	"github.com/Kenshin/curl"
 	"github.com/bitly/go-simplejson"
 
 	// go
+	"archive/tar"
 	"archive/zip"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,10 +26,12 @@ import (
 )
 
 const (
-	LATNPMURL  = "https://raw.githubusercontent.com/npm/npm/master/package.json"
-	NPMTAOBAO  = "http://npm.taobao.org/mirrors/npm/"
-	NPMDEFAULT = "https://github.com/npm/npm/releases/"
+	LATNPMURL  = "https://registry.npmjs.org/npm/package.json"
+	NPMTAOBAO  = "https://cdn.npmmirror.com/binaries/npm/"
+	NPMHUAWEI  = "https://mirrors.huaweicloud.com/npm-software/"
+	NPMDEFAULT = "https://registry.npmjs.org/npm/-/"
 	ZIP        = ".zip"
+	TGZ        = ".tgz"
 )
 
 /*
@@ -35,6 +39,9 @@ const (
 - zipname:  v3.8.5.zip
 - ziproot:  <v3.8.5.zip>/<root_folder>
 - zippath:  /<root>/v3.8.5.zip
+- tgzname:  npm-6.4.1.tgz
+- tgzroot:  <npm-6.4.1.tgz>/<root_folder>
+- tgzpath:  /<root>/npm-6.4.1.tgz
 - modules:  /<root>/node_modules
 - npmpath:  /<root>/node_modules/npm
 - npmbin:   /<root>/node_modules/npm/bin
@@ -46,6 +53,9 @@ type NPMange struct {
 	zipname  string
 	ziproot  string
 	zippath  string
+	tgzname  string
+	tgzroot  string
+	tgzpath  string
 	modules  string
 	npmpath  string
 	npmbin   string
@@ -56,7 +66,7 @@ type NPMange struct {
 var npm = new(NPMange)
 
 /*
- Create NPMange
+Create NPMange
 */
 func (this *NPMange) New() *NPMange {
 	this.root = config.GetConfig(config.NODEROOT)
@@ -69,7 +79,7 @@ func (this *NPMange) New() *NPMange {
 }
 
 /*
- Set zip info
+Set zip info
 */
 func (this *NPMange) SetZip(zip string) {
 	this.zipname = zip
@@ -77,13 +87,24 @@ func (this *NPMange) SetZip(zip string) {
 }
 
 /*
- Custom Print
+Set tgz info
+*/
+func (this *NPMange) SetTgz(tgz string) {
+	this.tgzname = tgz
+	this.tgzpath = this.root + util.DIVIDE + this.tgzname
+}
+
+/*
+Custom Print
 */
 func (this *NPMange) String() string {
 	s := fmt.Sprintf("root     = %v\n", this.root)
 	s += fmt.Sprintf("zipname  = %v\n", this.zipname)
 	s += fmt.Sprintf("ziproot  = %v\n", this.ziproot)
 	s += fmt.Sprintf("zippath  = %v\n", this.zippath)
+	s += fmt.Sprintf("tgzname  = %v\n", this.tgzname)
+	s += fmt.Sprintf("tgzroot  = %v\n", this.tgzroot)
+	s += fmt.Sprintf("tgzpath  = %v\n", this.tgzpath)
 	s += fmt.Sprintf("modules  = %v\n", this.modules)
 	s += fmt.Sprintf("npmpath  = %v\n", this.npmpath)
 	s += fmt.Sprintf("npmbin   = %v\n", this.npmbin)
@@ -93,7 +114,7 @@ func (this *NPMange) String() string {
 }
 
 /*
- Create node_modules folder
+Create node_modules folder
 */
 func (this *NPMange) CreateModules() {
 	if !util.IsDirExist(this.modules) {
@@ -106,15 +127,14 @@ func (this *NPMange) CreateModules() {
 }
 
 /*
- Download npm zip
+Download npm zip
 
- Param:
-    - url:  download url
-    - name: download file name
+Param:
+  - url:  download url
+  - name: download file name
 
- Return:
-    - error
-
+Return:
+  - error
 */
 func (this *NPMange) Download(url, name string) error {
 	curl.Options.Header = false
@@ -126,16 +146,15 @@ func (this *NPMange) Download(url, name string) error {
 }
 
 /*
-  Unzip file
+Unzip file
 
-  Return:
-    - error
-    - code
-        - -1: open  zip file error
-        - -2: open  file error
-        - -3: write file error
-        - -4: copy  file error
-
+Return:
+  - error
+  - code
+  - -1: open  zip file error
+  - -2: open  file error
+  - -3: write file error
+  - -4: copy  file error
 */
 func (this *NPMange) Unzip() (int, error) {
 	path, dest := this.zippath, this.modules
@@ -181,11 +200,78 @@ func (this *NPMange) Unzip() (int, error) {
 }
 
 /*
- Rename <root>\node_modules\folder to <root>\node_modules\npm
- Copy <root>\node_modules\npm\bin\ npm and npm.cmd to <root>\
+Untgz file
+
+Return:
+  - error
+  - code
+  - -1: open  tgz file error
+  - -2: open  file error
+  - -3: write file error
+  - -4: copy  file error
+*/
+func (this *NPMange) Untgz() (int, error) {
+	path, dest := this.tgzpath, this.modules+"\\"
+	srcFile, err := os.Open(path)
+	if err != nil {
+		return -2, err
+	}
+	defer srcFile.Close()
+	gr, err := gzip.NewReader(srcFile)
+	if err != nil {
+		return -1, err
+	}
+	defer gr.Close()
+	tr := tar.NewReader(gr)
+	idx := 0
+	for {
+		hdr, err := tr.Next()
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				return -2, err
+			}
+		}
+		//判断tgz文件根目录名称
+		if idx == 0 {
+			this.tgzroot = strings.Split(hdr.Name, "/")[0]
+		}
+		//拼接文件名
+		filename := dest + hdr.Name
+		// filename = strings.Replace(filename, "package", "npm", -1)
+		//创建目录
+		err = os.MkdirAll(string([]rune(filename)[0:strings.LastIndex(filename, "/")]), hdr.FileInfo().Mode())
+		if err != nil {
+			return -3, err
+		}
+		//创建文件
+		file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, hdr.FileInfo().Mode())
+		if err != nil {
+			return -3, err
+		}
+		defer file.Close()
+		//复制文件
+		if _, err := io.Copy(file, tr); err != nil {
+			return -4, err
+		}
+		idx++
+	}
+	return 0, nil
+}
+
+/*
+Rename <root>\node_modules\folder to <root>\node_modules\npm
+Copy <root>\node_modules\npm\bin\ npm and npm.cmd to <root>\
 */
 func (this *NPMange) Install() error {
-	if err := os.Rename(this.modules+util.DIVIDE+this.ziproot, this.npmpath); err != nil {
+	//判断是否tgz包
+	pkgpath := this.ziproot
+	if config.GetConfig(config.REGISTRY) == util.ORIGIN_DEFAULT {
+		pkgpath = this.tgzroot
+	}
+	//重命名文件夹
+	if err := os.Rename(filepath.Join(this.modules, util.DIVIDE, pkgpath), this.npmpath); err != nil {
 		P(ERROR, "rename fail, Error: %v\n", err.Error())
 		return err
 	} else {
@@ -201,15 +287,14 @@ func (this *NPMange) Install() error {
 }
 
 /*
- Remove file
+Remove file
 
- Param:
-    - path: olny clude path
-        - <root>/node_modules/npm
-        - <root>/npm
-        - <root>/npm.cmd
-        - <root>/<npm.zip>
-
+Param:
+  - path: olny clude path
+  - <root>/node_modules/npm
+  - <root>/npm
+  - <root>/npm.cmd
+  - <root>/<npm.zip>
 */
 func (this *NPMange) Clean(path string) error {
 	if util.IsDirExist(path) {
@@ -222,11 +307,10 @@ func (this *NPMange) Clean(path string) error {
 }
 
 /*
- Remove <root>/node_modules/npm, <root>/npm, <root>/npm.cmd
+Remove <root>/node_modules/npm, <root>/npm, <root>/npm.cmd
 
- Return:
-    - error
-
+Return:
+  - error
 */
 func (this *NPMange) CleanAll() error {
 	paths := [3]string{this.npmpath, this.root + util.DIVIDE + this.command1, this.root + util.DIVIDE + this.command2}
@@ -239,7 +323,7 @@ func (this *NPMange) CleanAll() error {
 }
 
 /*
- Install NPM
+Install NPM
 */
 func InstallNPM(version string) {
 	// try catch
@@ -279,7 +363,7 @@ func InstallNPM(version string) {
 }
 
 /*
- Uninstall NPM
+Uninstall NPM
 */
 func UninstallNPM() {
 	if getLocalNPMVer() == util.UNKNOWN {
@@ -291,11 +375,10 @@ func UninstallNPM() {
 }
 
 /*
- Get npm version by global( local ) node version
+Get npm version by global( local ) node version
 
- Return:
-    - string: npm version
-
+Return:
+  - string: npm version
 */
 func getNodeNpmVer() string {
 	ver, err := util.GetNodeVer(rootPath)
@@ -317,11 +400,10 @@ func getNodeNpmVer() string {
 }
 
 /*
- Get Latest NPM version
+Get Latest NPM version
 
- Return:
-    - string: latest npm version
-
+Return:
+  - string: latest npm version
 */
 func getLatNPMVer() string {
 	_, res, err := curl.Get(LATNPMURL)
@@ -330,7 +412,7 @@ func getLatNPMVer() string {
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -344,12 +426,11 @@ func getLatNPMVer() string {
 }
 
 /*
- Get global( local ) NPM version
+Get global( local ) NPM version
 
- Return:
-    - util.UNKNOWN: current not exist npmCmd
-    - version     : current npm version
-
+Return:
+  - util.UNKNOWN: current not exist npmCmd
+  - version     : current npm version
 */
 func getLocalNPMVer() string {
 	out, err := exec.Command(rootPath+util.NPM, "-v").Output()
@@ -361,21 +442,28 @@ func getLocalNPMVer() string {
 }
 
 /*
- Download / unzip / install npm
+Download / unzip / install npm
 
- Param:
-    - ver: npm version
-
+Param:
+  - ver: npm version
 */
 func downloadNpm(ver string) {
 	version := "v" + ver + ZIP
 	url := NPMTAOBAO + version
-	if config.GetConfig(config.REGISTRY) != util.ORIGIN_TAOBAO {
+	if config.GetConfig(config.REGISTRY) == util.ORIGIN_TAOBAO {
+		url = NPMTAOBAO + version
+		// create npm
+		npm.New().SetZip(version)
+	} else if config.GetConfig(config.REGISTRY) == util.ORIGIN_HUAWEI {
+		url = NPMHUAWEI + version
+		// create npm
+		npm.New().SetZip(version)
+	} else if config.GetConfig(config.REGISTRY) == util.ORIGIN_DEFAULT {
+		version = "npm-" + ver + TGZ
 		url = NPMDEFAULT + version
+		// create npm
+		npm.New().SetTgz(version)
 	}
-
-	// create npm
-	npm.New().SetZip(version)
 
 	P(DEFAULT, "Start download new npm version %v\n", version)
 
@@ -384,18 +472,27 @@ func downloadNpm(ver string) {
 		panic(err.Error())
 	}
 
-	P(DEFAULT, "Start unzip and install %v zip file, please wait.\n", version)
-
 	// create node_modules
 	npm.CreateModules()
 
 	// clean all npm files
 	npm.CleanAll()
 
-	// unzip
-	if _, err := npm.Unzip(); err != nil {
-		msg := fmt.Sprintf("unzip %v an error has occurred. \nError: ", npm.zipname, err.Error())
-		panic(errors.New(msg))
+	//判断是否tgz包
+	if config.GetConfig(config.REGISTRY) == util.ORIGIN_DEFAULT {
+		P(DEFAULT, "Start untgz and install %v tgz file, please wait.\n", version)
+		//untgz
+		if _, err := npm.Untgz(); err != nil {
+			msg := fmt.Sprintf("untgz %v an error has occurred. \nError: ", npm.tgzname, err.Error())
+			panic(errors.New(msg))
+		}
+	} else {
+		P(DEFAULT, "Start unzip and install %v zip file, please wait.\n", version)
+		// unzip
+		if _, err := npm.Unzip(); err != nil {
+			msg := fmt.Sprintf("unzip %v an error has occurred. \nError: ", npm.zipname, err.Error())
+			panic(errors.New(msg))
+		}
 	}
 
 	// install
@@ -403,8 +500,12 @@ func downloadNpm(ver string) {
 		return
 	}
 
-	// remove download zip file
-	npm.Clean(npm.zippath)
+	// remove download zip or tgz file
+	if config.GetConfig(config.REGISTRY) == util.ORIGIN_DEFAULT {
+		npm.Clean(npm.tgzpath)
+	} else {
+		npm.Clean(npm.zippath)
+	}
 
 	P(DEFAULT, "Set success, current npm version is %v.\n", ver)
 }

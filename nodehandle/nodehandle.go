@@ -10,7 +10,6 @@ import (
 	//"log"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strconv"
@@ -112,15 +111,14 @@ func Use(newer string) bool {
 }
 
 /*
- Install node
+Install node
 
- Param:
- 	- args  : install Node.js versions, include: x.xx.xx latest x.xx.xx-io-x86 x.xx.xx-x86
- 	- global: when global == true, call Use func.
+Param:
+  - args  : install Node.js versions, include: x.xx.xx latest x.xx.xx-io-x86 x.xx.xx-x86
+  - global: when global == true, call Use func.
 
- Return:
- 	- code: dl[0].Code, usage 'gnvm update latest'
-
+Return:
+  - code: dl[0].Code, usage 'gnvm update latest'
 */
 func InstallNode(args []string, global bool) int {
 
@@ -237,11 +235,10 @@ func InstallNode(args []string, global bool) int {
 }
 
 /*
- Uninstall node and npm
+Uninstall node and npm
 
- Param:
- 	- folder: version
-
+Param:
+  - folder: version
 */
 func Uninstall(folder string) {
 
@@ -278,14 +275,13 @@ func Uninstall(folder string) {
 }
 
 /*
- Update local Node.js latest verion
+Update local Node.js latest verion
 
- - localVersion, remoteVersion: string  Node.js version
- - local, remote:               float64 Node.js version
+- localVersion, remoteVersion: string  Node.js version
+- local, remote:               float64 Node.js version
 
- Param:
- 	- global: when global == true, call Use func.
-
+Param:
+  - global: when global == true, call Use func.
 */
 func Update(global bool) {
 
@@ -344,11 +340,10 @@ func Update(global bool) {
 }
 
 /*
- Search Node.js version and Print
+Search Node.js version and Print
 
- Param:
- 	- s: Node.js version, inlcude: *.*.* 0.*.* 0.10.* /<regexp>/ latest 0.10.10
-
+Param:
+  - s: Node.js version, inlcude: *.*.* 0.*.* 0.10.* /<regexp>/ latest 0.10.10
 */
 func Search(s string) {
 	regex, err := util.FormatWildcard(s, latURL)
@@ -397,11 +392,10 @@ func Search(s string) {
 }
 
 /*
- Print current local Node.js version list
+Print current local Node.js version list
 
- Param:
- 	- isPrint: when isPrint == true, print console
-
+Param:
+  - isPrint: when isPrint == true, print console
 */
 func LS(isPrint bool) ([]string, error) {
 
@@ -415,7 +409,7 @@ func LS(isPrint bool) ([]string, error) {
 
 	var lsArr []string
 	existVersion := false
-	files, err := ioutil.ReadDir(rootPath)
+	files, err := os.ReadDir(rootPath)
 
 	// show error
 	if err != nil {
@@ -477,12 +471,11 @@ func LS(isPrint bool) ([]string, error) {
 }
 
 /*
- Print remote Node.js version list
+Print remote Node.js version list
 
- Param:
- 	- limit: print max line
- 	- io:    when io == true, print iojs
-
+Param:
+  - limit: print max line
+  - io:    when io == true, print iojs
 */
 func LsRemote(limit int, io bool) {
 	// set url
@@ -525,11 +518,10 @@ func LsRemote(limit int, io bool) {
 }
 
 /*
- Show local / global Node.js version
+Show local / global Node.js version
 
- Param:
- 	- args:   include: latest global
-
+Param:
+  - args:   include: latest global
 */
 func NodeVersion(args []string) {
 
@@ -641,11 +633,10 @@ func NodeVersion(args []string) {
 }
 
 /*
- Print gnvm.exe version
+Print gnvm.exe version
 
- Param:
- 	- remote: when remote == true, print CHANGELOG
-
+Param:
+  - remote: when remote == true, print CHANGELOG
 */
 func Version(remote, detail bool) {
 

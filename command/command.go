@@ -311,8 +311,9 @@ gnvm config                   :Print all propertys from .gnvmrc.
 gnvm config INIT              :Initialization .gnvmrc file.
 gnvm config [props]           :Get .gnvmrc file props.
 gnvm config registry [custom] :Custom  is valid url.
-gnvm config registry DEFAULT  :DEFAULT is built-in variable. value is http://nodejs.org/dist/
-gnvm config registry TAOBAO   :TAOBAO  is built-in variable. value is http://npm.taobao.org/mirrors/node
+gnvm config registry DEFAULT  :DEFAULT is built-in variable. value is https://nodejs.org/dist/
+gnvm config registry TAOBAO   :TAOBAO  is built-in variable. value is https://cdn.npmmirror.com/binaries/node/
+gnvm config registry HUAWEI   :HUAWEI  is built-in variable. value is https://mirrors.huaweicloud.com/nodejs/
 gnvm config registry test     :Validation .gnvmfile registry property.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -350,6 +351,10 @@ gnvm config registry test     :Validation .gnvmfile registry property.
 				}
 			case "TAOBAO":
 				if newValue := config.SetConfig(args[0], util.ORIGIN_TAOBAO); newValue != "" {
+					P(DEFAULT, "Set success, %v new value is %v\n", args[0], newValue)
+				}
+			case "HUAWEI":
+				if newValue := config.SetConfig(args[0], util.ORIGIN_HUAWEI); newValue != "" {
 					P(DEFAULT, "Set success, %v new value is %v\n", args[0], newValue)
 				}
 			case "test":
