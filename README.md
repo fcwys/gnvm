@@ -267,7 +267,7 @@ c:\> npm -v
 
 [www-badge]:        https://img.shields.io/badge/website-gnvm.ksria.com-1DBA90.svg
 [www-link]:         http://ksria.com/gnvm
-[version-badge]:    https://img.shields.io/badge/lastest_version-0.2.0-blue.svg
+[version-badge]:    https://img.shields.io/badge/lastest_version-0.2.2-blue.svg
 [version-link]:     https://github.com/fcwys/gnvm/releases
 [travis-badge]:     https://travis-ci.org/fcwys/gnvm.svg?branch=master
 [travis-link]:      https://travis-ci.org/fcwys/gnvm
