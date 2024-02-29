@@ -1,10 +1,6 @@
 ![logo](http://i.imgur.com/Z4iPSgQ.png) GNVM - Node.js 多版本管理器  
 ================================  
-[![Travis][travis-badge]][travis-link]
 [![Version][version-badge]][version-link]
-[![Gitter][gitter-badge]][gitter-link]
-[![Slack][slack-badge]][slack-link]
-[![Jianliao][jianliao-badge]][jianliao-link]  
 
 #### `GNVM` 是一个简单的 `Windows` 下 Node.js 多版本管理器，类似的 `nvm` `nvmw` `nodist` 。  
 
@@ -250,18 +246,13 @@ c:\> npm -v
 * <https://github.com/daviddengcn/go-colortext>
 * <https://github.com/bitly/go-simplejson>
 
-下一步
----
-- [ ] 增加 `HTTP_PROXY` 。
-- [ ] 自动升级，例如 `gnvm upgrad` .
-- [ ] `gnvm.exe` 增加 `Chocolatey` 方案。
-- [ ] 支持多系统。（ `MAC`, `Linux` ）
+
 
 相关链接
 ---
-* [更新日志](https://github.com/kenshin/gnvm/blob/master/CHANGELOG.md)
+* [更新日志](https://github.com/fcwys/gnvm/blob/master/CHANGELOG.md)
 * [联系方式](http://kenshin.wang/) | [邮件](kenshin@ksria.com) | [微博](http://weibo.com/23784148)
-* [反馈](https://github.com/kenshin/gnvm/issues)
+* [反馈](https://github.com/fcwys/gnvm/issues)
 
 感谢
 ---
@@ -273,14 +264,15 @@ c:\> npm -v
 [![license-badge]][license-link]
 
 <!-- Link -->
+
 [www-badge]:        https://img.shields.io/badge/website-gnvm.ksria.com-1DBA90.svg
 [www-link]:         http://ksria.com/gnvm
 [version-badge]:    https://img.shields.io/badge/lastest_version-0.2.0-blue.svg
-[version-link]:     https://github.com/kenshin/gnvm/releases
-[travis-badge]:     https://travis-ci.org/Kenshin/gnvm.svg?branch=master
-[travis-link]:      https://travis-ci.org/Kenshin/gnvm
-[gitter-badge]:     https://badges.gitter.im/kenshin/gnvm.svg
-[gitter-link]:      https://gitter.im/kenshin/gnvm?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+[version-link]:     https://github.com/fcwys/gnvm/releases
+[travis-badge]:     https://travis-ci.org/fcwys/gnvm.svg?branch=master
+[travis-link]:      https://travis-ci.org/fcwys/gnvm
+[gitter-badge]:     https://badges.gitter.im/fcwys/gnvm.svg
+[gitter-link]:      https://gitter.im/fcwys/gnvm?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 [slack-badge]:      https://img.shields.io/badge/chat-slack-orange.svg
 [slack-link]:       https://gnvm.slack.com/
 [jianliao-badge]:   https://img.shields.io/badge/chat-jianliao-yellowgreen.svg
